@@ -9,11 +9,14 @@ public class PlayerMovement : MonoBehaviour
     private Rigidbody2D rb;
     private bool isGround;
 
-    public float speed = 400f;
-    public float jumpForce = 17f;
-    public int amountOfJumps;
-    public Transform groundCenter;
-    public LayerMask groundLayer;
+    [SerializeField] float speed;
+    [SerializeField] float jumpForce;
+    [SerializeField] int amountOfJumps;
+    [SerializeField] Transform groundCenter;
+    [SerializeField] LayerMask groundLayer;
+    [SerializeField] float speedMultipier;
+    [SerializeField] float shortJump;
+    [SerializeField] bool antiMidAirControl;
 
 
     public void OnMove(InputAction.CallbackContext context)
@@ -24,11 +27,32 @@ public class PlayerMovement : MonoBehaviour
     public void Update()
     {
         isGround = Physics2D.OverlapCircle(groundCenter.position, .2f, groundLayer);
+
     }
 
     private void FixedUpdate()
     {
-        rb.velocity = new Vector2(movementDirection.x * speed * Time.deltaTime, rb.velocity.y);
+        if (antiMidAirControl)
+        {
+            AntiGravity();
+        }
+        else
+        {
+            rb.velocity = new Vector2(movementDirection.x * speed * Time.deltaTime, rb.velocity.y);
+        }
+
+    }
+
+    public void AntiGravity()
+    {
+        if (isGround)
+        {
+            rb.velocity = new Vector2(movementDirection.x * speed * Time.deltaTime, rb.velocity.y);
+        }
+        else
+        {
+            rb.AddForce(movementDirection * speed * Time.deltaTime);
+        }
     }
 
     public void Awake()
@@ -46,7 +70,7 @@ public class PlayerMovement : MonoBehaviour
 
         if (amountOfJumps >= 0)
         {
-            
+
             if (context.performed)
             {
                 rb.velocity = new Vector2(rb.velocity.x, jumpForce);
@@ -54,7 +78,7 @@ public class PlayerMovement : MonoBehaviour
 
             if (context.canceled && rb.velocity.y > 0f)
             {
-                rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y * 0.7f);
+                rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y * shortJump);
             }
             amountOfJumps--;
         }
@@ -62,19 +86,20 @@ public class PlayerMovement : MonoBehaviour
 
     public void Dash(InputAction.CallbackContext context)
     {
-        if (isGround)
+
+
+        if (context.performed)
         {
-            if (context.performed)
-            {
-                speed = speed *2;
-            }
+            speed *= speedMultipier;
         }
 
         if (context.canceled)
         {
-            speed = 400f;
+
+            speed /= speedMultipier;
 
         }
+
 
     }
 }
