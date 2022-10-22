@@ -8,15 +8,17 @@ public class PlayerMovement : MonoBehaviour
     private Vector2 movementDirection;
     private Rigidbody2D rb;
     private bool isGround;
+    private int extraAmountOfJumps;
 
     [SerializeField] float speed;
     [SerializeField] float jumpForce;
-    [SerializeField] int amountOfJumps;
     [SerializeField] Transform groundCenter;
     [SerializeField] LayerMask groundLayer;
     [SerializeField] float speedMultipier;
     [SerializeField] float shortJump;
     [SerializeField] bool antiMidAirControl;
+    [SerializeField] bool doubleJump;
+
 
 
     public void OnMove(InputAction.CallbackContext context)
@@ -24,7 +26,7 @@ public class PlayerMovement : MonoBehaviour
         movementDirection = context.ReadValue<Vector2>();
     }
 
-    public void Update()
+    private void Update()
     {
         isGround = Physics2D.OverlapCircle(groundCenter.position, .2f, groundLayer);
 
@@ -43,7 +45,7 @@ public class PlayerMovement : MonoBehaviour
 
     }
 
-    public void AntiGravity()
+    private void AntiGravity()
     {
         if (isGround)
         {
@@ -51,24 +53,33 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            rb.AddForce(movementDirection * speed * Time.deltaTime);
+            rb.AddForce(speed * Time.deltaTime * movementDirection);
         }
     }
 
-    public void Awake()
+    private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+
+        
+
     }
 
     public void Jump(InputAction.CallbackContext context)
     {
         if (isGround)
         {
-            amountOfJumps = 3;
-
+            if (doubleJump)
+            {
+                extraAmountOfJumps = 1;
+            }
+            else
+            {
+                extraAmountOfJumps = 0;
+            }
         }
 
-        if (amountOfJumps >= 0)
+        if (extraAmountOfJumps >= 0)
         {
 
             if (context.performed)
@@ -79,8 +90,8 @@ public class PlayerMovement : MonoBehaviour
             if (context.canceled && rb.velocity.y > 0f)
             {
                 rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y * shortJump);
+                extraAmountOfJumps--;
             }
-            amountOfJumps--;
         }
     }
 
