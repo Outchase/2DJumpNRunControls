@@ -13,6 +13,7 @@ public class PlayerMovement : MonoBehaviour
     private bool isGrabbing;
     private int extraAmountOfJumps;
     private float wallJumpCounter;
+    private bool didWallJump;
 
     [SerializeField] float speed;
     [SerializeField] float speedMultipier;
@@ -53,9 +54,11 @@ public class PlayerMovement : MonoBehaviour
         if (wallJump)
         {
             WallJumpControler();
+            if (didWallJump)
+            {
+                rb.velocity = new Vector2(movementDirection.x*speed,jumpForce);
+            }
         }
-
-        //Debug.Log(rb.velocity.y);
 
     }
 
@@ -67,10 +70,15 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            rb.velocity = new Vector2(movementDirection.x * speed * Time.deltaTime, rb.velocity.y);
+
+            if (!didWallJump)
+            {
+                rb.velocity = new Vector2(movementDirection.x * speed * Time.deltaTime, rb.velocity.y);
+            }
+            
+
         }
     }
-
 
     private void AntiMidAir()
     {
@@ -99,9 +107,10 @@ public class PlayerMovement : MonoBehaviour
             {
                 wallJumpCounter = wallJumpTimer;
             }
+            didWallJump = false;
             isGrabbing = false;
-            rb.gravityScale = tempGravity;
 
+            rb.gravityScale = tempGravity;
         }
 
     }
@@ -110,6 +119,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (isGround)
         {
+
             if (doubleJump)
             {
                 extraAmountOfJumps = 1;
@@ -120,28 +130,39 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
-        if (isGrabbing)
-        {
-            if (context.started)
-            {
-                rb.velocity = new Vector2(movementDirection.x * speed, rb.velocity.y * jumpForce);
-            }
-
-        }
-        
         if (extraAmountOfJumps >= 0)
         {
-            if (context.performed)
+            //Debug.Log("you jump");
+
+            if (context.started)
             {
-                rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+                if (isGrabbing)
+                {
+                    
+                    didWallJump = true;
+                }
+                else
+                {
+                    extraAmountOfJumps--;
+                }
             }
 
-            if (context.canceled && rb.velocity.y > 0f)
+            if (context.performed && !isGrabbing)
             {
+                rb.velocity = new Vector2(movementDirection.x, jumpForce);
+            }
+
+            if (context.canceled && rb.velocity.y > 0f && !isGrabbing)
+            {
+                //Debug.Log(extraAmountOfJumps);
+
                 rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y * shortJump);
-                extraAmountOfJumps--;
             }
         }
+
+
+
+
     }
 
     public void Dash(InputAction.CallbackContext context)
