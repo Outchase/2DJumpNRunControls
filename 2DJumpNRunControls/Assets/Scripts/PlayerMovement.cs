@@ -20,7 +20,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] float jumpForce;
     [SerializeField] float shortJump;
     [SerializeField] Transform groundCenter;
-    [SerializeField] Transform wallCenter;
+    [SerializeField] Transform wallCenterRight;
+    [SerializeField] Transform wallCenterLeft;
     [SerializeField] LayerMask groundLayer;
     [SerializeField] bool antiMidAirControl;
     [SerializeField] bool doubleJump;
@@ -49,7 +50,7 @@ public class PlayerMovement : MonoBehaviour
     private void Update()
     {
         isGround = Physics2D.OverlapCircle(groundCenter.position, .2f, groundLayer);
-        isWall = Physics2D.OverlapCircle(wallCenter.position, .2f, groundLayer);
+        isWall = Physics2D.OverlapCircle(wallCenterRight.position, .2f, groundLayer);
 
         if (wallJump)
         {
