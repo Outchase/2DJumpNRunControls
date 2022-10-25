@@ -88,12 +88,11 @@ public class AdvancedPlayerMovement : MonoBehaviour
 
     public void OnJump(InputAction.CallbackContext context)
     {
-        if (isGround)
-        {
-            if (context.started)
+       
+       
+            if (context.performed)
             {
                 tempJumpPress = tempJumpPressTimer;
-                Debug.Log(tempJumpPress);
 
                 if (enableDoubleJump && extraAmountOfJumps > 0)
                 {
@@ -101,7 +100,6 @@ public class AdvancedPlayerMovement : MonoBehaviour
                     extraAmountOfJumps--;
                 }
             }
-        }
 
         if (context.canceled && rb.velocity.y > 0f)
         {
