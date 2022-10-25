@@ -56,11 +56,12 @@ public class AdvancedPlayerMovement : MonoBehaviour
         }
 
         tempJumpPress -= Time.deltaTime;
-        if (tempJumpPress > 0 && tempGrounded > 0)
+        if (tempJumpPress > 0 && tempGrounded > 0 && isGround)
         {
             tempJumpPress = 0;
             tempGrounded = 0;
             extraAmountOfJumps = 1;
+
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
         }
 
@@ -87,22 +88,29 @@ public class AdvancedPlayerMovement : MonoBehaviour
 
     public void OnJump(InputAction.CallbackContext context)
     {
-       
-       
-            if (context.performed)
-            {
-                tempJumpPress = tempJumpPressTimer;
 
-                if (enableDoubleJump && extraAmountOfJumps > 0)
-                {
-                    rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-                    extraAmountOfJumps--;
-                }
+
+        if (context.started)
+        {
+            
+
+            tempJumpPress = tempJumpPressTimer;
+
+            if (enableDoubleJump && extraAmountOfJumps > 0)
+            {
+                rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+                extraAmountOfJumps--;
+            }
+        }
+
+        if (context.canceled)
+        {
+            if (rb.velocity.y > 0f && isGround)
+            {
+                rb.velocity = new Vector2(rb.velocity.x, shortJump);
+
             }
 
-        if (context.canceled && rb.velocity.y > 0f)
-        {
-            rb.velocity = new Vector2(rb.velocity.x, shortJump);
         }
     }
 
