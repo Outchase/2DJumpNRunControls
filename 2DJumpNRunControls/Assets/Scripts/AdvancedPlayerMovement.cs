@@ -83,7 +83,6 @@ public class AdvancedPlayerMovement : MonoBehaviour
 
         rb.velocity = new Vector2(horizontalVelocity, rb.velocity.y);
 
-       Debug.Log(Time.deltaTime);
     }
 
     public void OnJump(InputAction.CallbackContext context)
