@@ -40,10 +40,13 @@ public class AdvancedPlayerMovement : MonoBehaviour
     [SerializeField] float coyoteTimer = 0.05f;
     [SerializeField] float JumpBeforeGroundTimer = 0.2f;
     [SerializeField] float wallGrabTimer = 0.2f;
+    [SerializeField] float wallJumpTimer = 0.2f;
 
     public void OnMove(InputAction.CallbackContext context)
     {
-        movementDirection = context.ReadValue<Vector2>();
+        
+            movementDirection = context.ReadValue<Vector2>();
+        
     }
 
     private void Awake()
@@ -83,32 +86,15 @@ public class AdvancedPlayerMovement : MonoBehaviour
             WallJumpControler();
         }
 
-        //add basic velocity each frame
-        horizontalVelocity = rb.velocity.x;
-        horizontalVelocity += movementDirection.x;
+        Movement();
 
-        //flip negaive number into positive, verify movement direction and on 0 damp speed
-        //damp speed when direction is switched
-        //damp while moving forward
-        if (Mathf.Abs(movementDirection.x) < 0.01f)
+        //apply speed to the player movement 
+        if (!didWallJump)
         {
-            horizontalVelocity *= Mathf.Pow(acceleration - dampingWhenStopping, Time.deltaTime * 10f);
+            rb.velocity = new Vector2(horizontalVelocity, rb.velocity.y);
         }
-        else if (Mathf.Sign(movementDirection.x) != Mathf.Sign(horizontalVelocity))
-        {
-            horizontalVelocity *= Mathf.Pow(acceleration - dampingWhenTurning, Time.deltaTime * 10f);
-        }
-        else
-        {
-            horizontalVelocity *= Mathf.Pow(acceleration - dampingMovingForward, Time.deltaTime * 10f);
-
-        }
-
-        //apply speed to the player movement
-        rb.velocity = new Vector2(horizontalVelocity, rb.velocity.y);
-
     }
-
+    
     public void OnJump(InputAction.CallbackContext context)
     {
 
@@ -126,9 +112,9 @@ public class AdvancedPlayerMovement : MonoBehaviour
 
         if (context.started && isGrabbing)
         {
-           didWallJump = true;
+            didWallJump = true;
         }
-        
+
 
 
         if (context.canceled)
@@ -155,32 +141,31 @@ public class AdvancedPlayerMovement : MonoBehaviour
                 //listens to jump event
                 if (didWallJump)
                 {
-
                     if (isWallLeft)
                     {
                         rb.velocity = new Vector2(horizontalWallJumpForce, verticalWallJumpForce);
                     }
-                    else if (isWallRight)
+                    else
                     {
                         rb.velocity = new Vector2(-horizontalWallJumpForce, verticalWallJumpForce);
                     }
+                    //reset grabtime and set recovery walljump after sucessful jump
 
-                    //reset grabtime after sucessful jump
-                    wallGrabCounter = wallGrabTimer;
+                    Invoke(nameof(SetWallJumpToFalse), wallJumpTimer);
                 }
 
             }
             else
             {
-                isGrabbing = false;
                 rb.gravityScale = tempGravity;
-                didWallJump = false;
+                isGrabbing = false;
+
             }
         }
         else
         {
             //reset grabtime after touching the ground
-            wallGrabCounter = wallGrabTimer;
+            SetWallJumpToFalse();
         }
 
 
@@ -201,5 +186,36 @@ public class AdvancedPlayerMovement : MonoBehaviour
                 dampingMovingForward *= speedMultipier;
             }
         }
+    }
+
+    public void SetWallJumpToFalse()
+    {
+        didWallJump = false;
+        wallGrabCounter = wallGrabTimer;
+
+    }
+
+    public void Movement()
+    {
+        //add basic velocity each frame
+        horizontalVelocity = rb.velocity.x;
+        horizontalVelocity += movementDirection.x;
+
+        //flip negaive number into positive, verify movement direction and on 0 damp speed
+        //damp speed when direction is switched
+        //damp while moving forward
+        if (Mathf.Abs(movementDirection.x) < 0.01f) //Âbs flips negative to positive
+        {
+            horizontalVelocity *= Mathf.Pow(acceleration - dampingWhenStopping, Time.deltaTime * 10f);
+        }
+        else if (Mathf.Sign(movementDirection.x) != Mathf.Sign(horizontalVelocity))// Sign turns positive and 0 to 1 and negative to -1
+        {
+            horizontalVelocity *= Mathf.Pow(acceleration - dampingWhenTurning, Time.deltaTime * 10f);
+        }
+        else
+        {
+            horizontalVelocity *= Mathf.Pow(acceleration - dampingMovingForward, Time.deltaTime * 10f);//x^y
+        }
+
     }
 }

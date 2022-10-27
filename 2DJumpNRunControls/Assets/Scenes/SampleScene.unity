@@ -1555,18 +1555,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 949d7b7f40ad7094ca65696f225c1dde, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enableDash: 0
+  enableDash: 1
   acceleration: 1
-  speedMultipier: 2
-  dampingMovingForward: 0.65
+  speedMultipier: 1.25
+  dampingMovingForward: 0.85
   dampingWhenStopping: 0.5
   dampingWhenTurning: 0.8
-  enableWallJump: 1
+  enableWallJump: 0
   enableDoubleJump: 0
   shortJump: 9
   jumpForce: 18
   horizontalWallJumpForce: 10
-  verticalWallJumpForce: 12
+  verticalWallJumpForce: 14
   groundLayer:
     serializedVersion: 2
     m_Bits: 8
@@ -1574,5 +1574,6 @@ MonoBehaviour:
   wallCenterRight: {fileID: 983968971}
   wallCenterLeft: {fileID: 289215278}
   coyoteTimer: 0.25
-  JumpBeforeGroundTimer: 0.05
+  JumpBeforeGroundTimer: 0.2
   wallGrabTimer: 0.2
+  wallJumpTimer: 0.2
