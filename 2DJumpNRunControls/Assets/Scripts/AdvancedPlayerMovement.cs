@@ -1,11 +1,122 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+
+#if UNITY_EDITOR
+
+using UnityEditor;
+using UnityEditorInternal;
+
+#endif
+
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class AdvancedPlayerMovement : MonoBehaviour
 {
+    enum ItemType { movement, jumping, timer, colissionMarkpoints }
+
+    [Header("Presets")]
+    [SerializeField] ItemType setup;
+    readonly List<GameObject> movements = new();
+
+    bool showDashMovement = false;
+    bool showBasicMovement = false;
+    bool showJumpExtra = false;
+    bool showBasicJump = false;
+    bool showBasicJumpTimer = false;
+    bool showTimerExtra = false;
+
+    #region
+#if UNITY_EDITOR
+    [CustomEditor(typeof(AdvancedPlayerMovement))]
+    public class AdvancedPlayerMovementEditor : Editor
+    {
+        public override void OnInspectorGUI()
+        {
+            base.OnInspectorGUI();
+            AdvancedPlayerMovement advancedPlayerMovement = (AdvancedPlayerMovement)target;
+            if (advancedPlayerMovement.setup == ItemType.movement)
+            {
+                EditorGUILayout.Space();
+                advancedPlayerMovement.showBasicMovement = EditorGUILayout.Foldout(advancedPlayerMovement.showBasicMovement, "Basic Movement", true);
+                if (advancedPlayerMovement.showBasicMovement)
+                {
+                    advancedPlayerMovement.acceleration = EditorGUILayout.FloatField("Acceleration", advancedPlayerMovement.acceleration);
+                    advancedPlayerMovement.dampingMovingForward = EditorGUILayout.Slider("Damping Moving Forward", advancedPlayerMovement.dampingMovingForward, 0, 1f);
+                    advancedPlayerMovement.dampingWhenStopping = EditorGUILayout.Slider("Damping When Stopping", advancedPlayerMovement.dampingWhenStopping, 0, 1f);
+                    advancedPlayerMovement.dampingWhenTurning = EditorGUILayout.Slider("Damping When Turning", advancedPlayerMovement.dampingWhenTurning, 0, 1f);
+                }
+
+                EditorGUILayout.Space();
+
+                advancedPlayerMovement.showDashMovement = EditorGUILayout.Foldout(advancedPlayerMovement.showDashMovement, "Dash Movement", true);
+                if (advancedPlayerMovement.showDashMovement)
+                {
+                    EditorGUILayout.Space();
+                    advancedPlayerMovement.enableDash = EditorGUILayout.Toggle("Enable Dash", advancedPlayerMovement.enableDash);
+                    advancedPlayerMovement.speedMultipier = EditorGUILayout.FloatField("Speed Multiplier", advancedPlayerMovement.speedMultipier);
+                }
+            }
+            else if (advancedPlayerMovement.setup == ItemType.jumping)
+            {
+                EditorGUILayout.Space();
+                advancedPlayerMovement.showBasicJump = EditorGUILayout.Foldout(advancedPlayerMovement.showBasicJump, "Basic Jumps", true);
+                if (advancedPlayerMovement.showBasicJump)
+                {
+                    advancedPlayerMovement.shortJump = EditorGUILayout.FloatField("Short Jump", advancedPlayerMovement.shortJump);
+                    advancedPlayerMovement.jumpForce = EditorGUILayout.FloatField("Jump Force", advancedPlayerMovement.jumpForce);
+                }
+
+                EditorGUILayout.Space();
+
+                advancedPlayerMovement.showJumpExtra = EditorGUILayout.Foldout(advancedPlayerMovement.showJumpExtra, "Extras", true);
+                if (advancedPlayerMovement.showJumpExtra)
+                {
+                    advancedPlayerMovement.enableDoubleJump = EditorGUILayout.Toggle("Enable Double Jump", advancedPlayerMovement.enableDoubleJump);
+                    advancedPlayerMovement.enableWallJump = EditorGUILayout.Toggle("Enable Wall Jump", advancedPlayerMovement.enableWallJump);
+                    advancedPlayerMovement.horizontalWallJumpForce = EditorGUILayout.FloatField("Horizontal Wall Jump Force", advancedPlayerMovement.horizontalWallJumpForce);
+                    advancedPlayerMovement.verticalWallJumpForce = EditorGUILayout.FloatField("Vertical Wall Jump Force", advancedPlayerMovement.verticalWallJumpForce);
+                }
+            }
+            else if (advancedPlayerMovement.setup == ItemType.timer)
+            {
+                EditorGUILayout.Space();
+                advancedPlayerMovement.showBasicJumpTimer = EditorGUILayout.Foldout(advancedPlayerMovement.showBasicJumpTimer, "Jump Timer", true);
+                if (advancedPlayerMovement.showBasicJumpTimer)
+                {
+                    advancedPlayerMovement.coyoteTimer = EditorGUILayout.FloatField("Coyote Timer", advancedPlayerMovement.coyoteTimer);
+                    advancedPlayerMovement.JumpBeforeGroundTimer = EditorGUILayout.FloatField("Jump Before Ground Timer", advancedPlayerMovement.JumpBeforeGroundTimer);
+                }
+
+                EditorGUILayout.Space();
+
+                advancedPlayerMovement.showTimerExtra = EditorGUILayout.Foldout(advancedPlayerMovement.showTimerExtra, "Extras", true);
+                if (advancedPlayerMovement.showTimerExtra)
+                {
+                    advancedPlayerMovement.wallGrabTimer = EditorGUILayout.FloatField("Wall Grab Timer", advancedPlayerMovement.wallGrabTimer);
+                    advancedPlayerMovement.wallJumpTimer = EditorGUILayout.FloatField("Wall Jump Timer", advancedPlayerMovement.wallJumpTimer);
+                }
+            }
+            else if (advancedPlayerMovement.setup == ItemType.colissionMarkpoints)
+            {
+                EditorGUILayout.Space();
+
+                advancedPlayerMovement.groundLayer = EditorGUILayout.MaskField("Ground Layer", InternalEditorUtility.LayerMaskToConcatenatedLayersMask(advancedPlayerMovement.groundLayer), InternalEditorUtility.layers);
+                advancedPlayerMovement.groundCenter = EditorGUILayout.ObjectField("Ground Layer", advancedPlayerMovement.groundCenter, typeof(Transform), true) as Transform;
+                advancedPlayerMovement.wallCenterRight = EditorGUILayout.ObjectField("Wall Center Right", advancedPlayerMovement.wallCenterRight, typeof(Transform), true) as Transform;
+                advancedPlayerMovement.wallCenterLeft = EditorGUILayout.ObjectField("Wall Center Left", advancedPlayerMovement.wallCenterLeft, typeof(Transform), true) as Transform;
+
+
+            }
+
+
+
+        }
+    }
+#endif
+    #endregion
+
     private Vector2 movementDirection;
     private bool isGround;
     private bool isWallRight;
@@ -21,32 +132,30 @@ public class AdvancedPlayerMovement : MonoBehaviour
     private float tempGravity = 0;
 
 
-    [SerializeField] bool enableDash = false;
-    [SerializeField] float acceleration = 1;
-    [SerializeField] float speedMultipier = 2;
-    [SerializeField][Range(0, 1)] float dampingMovingForward = 0.5f;
-    [SerializeField][Range(0, 1)] float dampingWhenStopping = 0.5f;
-    [SerializeField][Range(0, 1)] float dampingWhenTurning = 0.8f;
-    [SerializeField] bool enableWallJump = false;
-    [SerializeField] bool enableDoubleJump = false;
-    [SerializeField] float shortJump = 9f;
-    [SerializeField] float jumpForce = 18f;
-    [SerializeField] float horizontalWallJumpForce = 10f;
-    [SerializeField] float verticalWallJumpForce = 12f;
-    [SerializeField] LayerMask groundLayer;
-    [SerializeField] Transform groundCenter;
-    [SerializeField] Transform wallCenterRight;
-    [SerializeField] Transform wallCenterLeft;
-    [SerializeField] float coyoteTimer = 0.05f;
-    [SerializeField] float JumpBeforeGroundTimer = 0.2f;
-    [SerializeField] float wallGrabTimer = 0.2f;
-    [SerializeField] float wallJumpTimer = 0.2f;
+    bool enableDash = false;
+    float acceleration = 1;
+    float speedMultipier = 2;
+    float dampingMovingForward = 0.5f;
+    float dampingWhenStopping = 0.5f;
+    float dampingWhenTurning = 0.8f;
+    bool enableWallJump = false;
+    bool enableDoubleJump = false;
+    float shortJump = 9f;
+    float jumpForce = 18f;
+    float horizontalWallJumpForce = 10f;
+    float verticalWallJumpForce = 12f;
+    LayerMask groundLayer;
+    Transform groundCenter;
+    Transform wallCenterRight;
+    Transform wallCenterLeft;
+    float coyoteTimer = 0.05f;
+    float JumpBeforeGroundTimer = 0.2f;
+    float wallGrabTimer = 0.2f;
+    float wallJumpTimer = 0.2f;
 
     public void OnMove(InputAction.CallbackContext context)
     {
-        
-            movementDirection = context.ReadValue<Vector2>();
-        
+        movementDirection = context.ReadValue<Vector2>();
     }
 
     private void Awake()
@@ -94,7 +203,7 @@ public class AdvancedPlayerMovement : MonoBehaviour
             rb.velocity = new Vector2(horizontalVelocity, rb.velocity.y);
         }
     }
-    
+
     public void OnJump(InputAction.CallbackContext context)
     {
 
