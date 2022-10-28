@@ -1555,4 +1555,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 949d7b7f40ad7094ca65696f225c1dde, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  setup: 3
+  setup: 0
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 8
+  groundCenter: {fileID: 799818790}
+  wallCenterRight: {fileID: 983968971}
+  wallCenterLeft: {fileID: 289215278}

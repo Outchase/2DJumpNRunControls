@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 
 #if UNITY_EDITOR
 
@@ -14,6 +15,7 @@ using UnityEngine.InputSystem;
 
 public class AdvancedPlayerMovement : MonoBehaviour
 {
+    //set a selectbox
     enum ItemType { movement, jumping, timer, colissionMarkpoints }
 
     [Header("Presets")]
@@ -29,6 +31,7 @@ public class AdvancedPlayerMovement : MonoBehaviour
 
     #region
 #if UNITY_EDITOR
+
     [CustomEditor(typeof(AdvancedPlayerMovement))]
     public class AdvancedPlayerMovementEditor : Editor
     {
@@ -36,10 +39,14 @@ public class AdvancedPlayerMovement : MonoBehaviour
         {
             base.OnInspectorGUI();
             AdvancedPlayerMovement advancedPlayerMovement = (AdvancedPlayerMovement)target;
+
+            //shows diffrence setup depending the what was selected
             if (advancedPlayerMovement.setup == ItemType.movement)
             {
                 EditorGUILayout.Space();
                 advancedPlayerMovement.showBasicMovement = EditorGUILayout.Foldout(advancedPlayerMovement.showBasicMovement, "Basic Movement", true);
+
+                //toggle drop down settings
                 if (advancedPlayerMovement.showBasicMovement)
                 {
                     advancedPlayerMovement.acceleration = EditorGUILayout.FloatField("Acceleration", advancedPlayerMovement.acceleration);
@@ -100,14 +107,12 @@ public class AdvancedPlayerMovement : MonoBehaviour
             }
             else if (advancedPlayerMovement.setup == ItemType.colissionMarkpoints)
             {
-                EditorGUILayout.Space();
 
+                EditorGUILayout.Space();
                 advancedPlayerMovement.groundLayer = EditorGUILayout.MaskField("Ground Layer", InternalEditorUtility.LayerMaskToConcatenatedLayersMask(advancedPlayerMovement.groundLayer), InternalEditorUtility.layers);
-                advancedPlayerMovement.groundCenter = EditorGUILayout.ObjectField("Ground Layer", advancedPlayerMovement.groundCenter, typeof(Transform), true) as Transform;
+                advancedPlayerMovement.groundCenter = EditorGUILayout.ObjectField("Ground Center", advancedPlayerMovement.groundCenter, typeof(Transform), true) as Transform; //get the System.Type object for a type and allow to assign object
                 advancedPlayerMovement.wallCenterRight = EditorGUILayout.ObjectField("Wall Center Right", advancedPlayerMovement.wallCenterRight, typeof(Transform), true) as Transform;
                 advancedPlayerMovement.wallCenterLeft = EditorGUILayout.ObjectField("Wall Center Left", advancedPlayerMovement.wallCenterLeft, typeof(Transform), true) as Transform;
-
-
             }
 
 
@@ -134,8 +139,8 @@ public class AdvancedPlayerMovement : MonoBehaviour
 
     bool enableDash = false;
     float acceleration = 1;
-    float speedMultipier = 2;
-    float dampingMovingForward = 0.5f;
+    float speedMultipier = 1.25f;
+    float dampingMovingForward = 0.8f;
     float dampingWhenStopping = 0.5f;
     float dampingWhenTurning = 0.8f;
     bool enableWallJump = false;
@@ -144,10 +149,10 @@ public class AdvancedPlayerMovement : MonoBehaviour
     float jumpForce = 18f;
     float horizontalWallJumpForce = 10f;
     float verticalWallJumpForce = 12f;
-    LayerMask groundLayer;
-    Transform groundCenter;
-    Transform wallCenterRight;
-    Transform wallCenterLeft;
+    [HideInInspector][SerializeField] LayerMask groundLayer;
+    [HideInInspector][SerializeField] Transform groundCenter;
+    [HideInInspector][SerializeField] Transform wallCenterRight;
+    [HideInInspector][SerializeField] Transform wallCenterLeft;
     float coyoteTimer = 0.05f;
     float JumpBeforeGroundTimer = 0.2f;
     float wallGrabTimer = 0.2f;
