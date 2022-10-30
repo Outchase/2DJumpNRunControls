@@ -62,7 +62,10 @@ public class AdvancedPlayerMovement : MonoBehaviour
                 {
                     EditorGUILayout.Space();
                     advancedPlayerMovement.enableDash = EditorGUILayout.Toggle("Enable Dash", advancedPlayerMovement.enableDash);
-                    advancedPlayerMovement.speedMultipier = EditorGUILayout.FloatField("Speed Multiplier", advancedPlayerMovement.speedMultipier);
+                    if (advancedPlayerMovement.enableDash)
+                    {
+                        advancedPlayerMovement.speedMultipier = EditorGUILayout.FloatField("Speed Multiplier", advancedPlayerMovement.speedMultipier);
+                    }
                 }
             }
             else if (advancedPlayerMovement.setup == ItemType.jumping)
@@ -82,8 +85,11 @@ public class AdvancedPlayerMovement : MonoBehaviour
                 {
                     advancedPlayerMovement.enableDoubleJump = EditorGUILayout.Toggle("Enable Double Jump", advancedPlayerMovement.enableDoubleJump);
                     advancedPlayerMovement.enableWallJump = EditorGUILayout.Toggle("Enable Wall Jump", advancedPlayerMovement.enableWallJump);
-                    advancedPlayerMovement.horizontalWallJumpForce = EditorGUILayout.FloatField("Horizontal Wall Jump Force", advancedPlayerMovement.horizontalWallJumpForce);
-                    advancedPlayerMovement.verticalWallJumpForce = EditorGUILayout.FloatField("Vertical Wall Jump Force", advancedPlayerMovement.verticalWallJumpForce);
+                    if (advancedPlayerMovement.enableWallJump)
+                    {
+                        advancedPlayerMovement.horizontalWallJumpForce = EditorGUILayout.FloatField("Horizontal Wall Jump Force", advancedPlayerMovement.horizontalWallJumpForce);
+                        advancedPlayerMovement.verticalWallJumpForce = EditorGUILayout.FloatField("Vertical Wall Jump Force", advancedPlayerMovement.verticalWallJumpForce);
+                    }
                 }
             }
             else if (advancedPlayerMovement.setup == ItemType.timer)
@@ -101,8 +107,15 @@ public class AdvancedPlayerMovement : MonoBehaviour
                 advancedPlayerMovement.showTimerExtra = EditorGUILayout.Foldout(advancedPlayerMovement.showTimerExtra, "Extras", true);
                 if (advancedPlayerMovement.showTimerExtra)
                 {
-                    advancedPlayerMovement.wallGrabTimer = EditorGUILayout.FloatField("Wall Grab Timer", advancedPlayerMovement.wallGrabTimer);
-                    advancedPlayerMovement.wallJumpTimer = EditorGUILayout.FloatField("Wall Jump Timer", advancedPlayerMovement.wallJumpTimer);
+                    if (advancedPlayerMovement.enableWallJump)
+                    {
+                        advancedPlayerMovement.wallGrabTimer = EditorGUILayout.FloatField("Wall Grab Timer", advancedPlayerMovement.wallGrabTimer);
+                        advancedPlayerMovement.wallJumpTimer = EditorGUILayout.FloatField("Wall Jump Timer", advancedPlayerMovement.wallJumpTimer);
+                    }
+                    else
+                    {
+                        EditorGUILayout.LabelField("Wall Jump is disabled");
+                    }
                 }
             }
             else if (advancedPlayerMovement.setup == ItemType.colissionMarkpoints)
@@ -137,26 +150,26 @@ public class AdvancedPlayerMovement : MonoBehaviour
     private float tempGravity = 0;
 
 
-    bool enableDash = false;
-    float acceleration = 1;
-    float speedMultipier = 1.25f;
-    float dampingMovingForward = 0.8f;
-    float dampingWhenStopping = 0.5f;
-    float dampingWhenTurning = 0.8f;
-    bool enableWallJump = false;
-    bool enableDoubleJump = false;
-    float shortJump = 9f;
-    float jumpForce = 18f;
-    float horizontalWallJumpForce = 10f;
-    float verticalWallJumpForce = 12f;
+    [HideInInspector][SerializeField] bool enableDash = false;
+    [HideInInspector][SerializeField] float acceleration = 1;
+    [HideInInspector][SerializeField] float speedMultipier = 1.25f;
+    [HideInInspector][SerializeField] float dampingMovingForward = 0.8f;
+    [HideInInspector][SerializeField] float dampingWhenStopping = 0.5f;
+    [HideInInspector][SerializeField] float dampingWhenTurning = 0.8f;
+    [HideInInspector][SerializeField] bool enableWallJump = false;
+    [HideInInspector][SerializeField] bool enableDoubleJump = false;
+    [HideInInspector][SerializeField] float shortJump = 9f;
+    [HideInInspector][SerializeField] float jumpForce = 18f;
+    [HideInInspector][SerializeField] float horizontalWallJumpForce = 10f;
+    [HideInInspector][SerializeField] float verticalWallJumpForce = 12f;
     [HideInInspector][SerializeField] LayerMask groundLayer;
     [HideInInspector][SerializeField] Transform groundCenter;
     [HideInInspector][SerializeField] Transform wallCenterRight;
     [HideInInspector][SerializeField] Transform wallCenterLeft;
-    float coyoteTimer = 0.05f;
-    float JumpBeforeGroundTimer = 0.2f;
-    float wallGrabTimer = 0.2f;
-    float wallJumpTimer = 0.2f;
+    [HideInInspector][SerializeField] float coyoteTimer = 0.05f;
+    [HideInInspector][SerializeField] float JumpBeforeGroundTimer = 0.2f;
+    [HideInInspector][SerializeField] float wallGrabTimer = 0.2f;
+    [HideInInspector][SerializeField] float wallJumpTimer = 0.2f;
 
     public void OnMove(InputAction.CallbackContext context)
     {
